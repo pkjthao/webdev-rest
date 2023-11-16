@@ -58,23 +58,107 @@ function dbRun(query, params) {
  ********************************************************************/
 // GET request handler for crime codes
 app.get('/codes', (req, res) => {
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
-    
-    res.status(200).type('json').send({}); // <-- you will need to change this
+    //console.log(req.query); // query object (key-value pairs after the ? in the url)
+    let sqlQuery = 'Select * FROM Codes';
+    console.log(sqlQuery);
+
+    dbSelect(sqlQuery)
+    .then((rows) => {
+        //console.log(rows);
+        //{"code": 100, "type": "MURDER"}
+        let codes = '[ ';
+        rows.forEach((res) => {
+            codes += '{"code": ' + res.code + ', "type": "' + res.incident_type + '"}, ';
+            
+        });
+        codes = codes.slice(0, -2);
+        codes += ' ]';
+        codes = JSON.parse(codes);
+        console.log(codes);
+        res.status(200).type('json').send(codes);
+    })
+    .catch((error) => {
+        res.status(500).type('txt').send(error);
+    });
 });
 
 // GET request handler for neighborhoods
 app.get('/neighborhoods', (req, res) => {
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
-    
-    res.status(200).type('json').send({}); // <-- you will need to change this
+    //console.log(req.query); // query object (key-value pairs after the ? in the url)
+    let sqlQuery = 'Select * FROM Neighborhoods';
+    console.log(sqlQuery);
+
+    dbSelect(sqlQuery)
+    .then((rows) => {
+        // {"id": 1, "name": "Conway/Battlecreek/Highwood"},
+        let neighborhoods = '[ ';
+        rows.forEach((item) => {
+            neighborhoods += '{"id": ' + item.neighborhood_number + ', "name": "' + item.neighborhood_name + '"}, ';
+        });
+        neighborhoods = neighborhoods.slice(0, -2);
+        neighborhoods += ' ]';
+        neighborhoods = JSON.parse(neighborhoods);
+        console.log(neighborhoods);
+        res.status(200).type('json').send(neighborhoods);
+    })
+    .catch((error) => {
+        res.status(500).type('txt').send(error);
+    });
 });
 
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
+    //console.log(req.query); // query object (key-value pairs after the ? in the url)
     
-    res.status(200).type('json').send({}); // <-- you will need to change this
+    let sqlQuery = 'Select * FROM Incidents LIMIT ?';
+    let params = [1000];
+    console.log(sqlQuery);
+
+    dbSelect(sqlQuery, params)
+    .then((rows) => {
+        //console.log(rows[0].incident_type);
+        /*{ want
+            "case_number": "19245020",
+            "date": "2019-10-30",
+            "time": "23:57:08",
+            "code": 9954,
+            "incident": "Proactive Police Visit",
+            "police_grid": 87,
+            "neighborhood_number": 7,
+            "block": "THOMAS AV  & VICTORIA"
+        }*/
+
+        /*{ actual
+            "case_number":"14174473",
+            "date_time":"2014-08-17T18:24:00",
+            "code":500,
+            "incident":"Burglary",
+            "police_grid":120,
+            "neighborhood_number":1,
+            "block":"215X WILSON AV"
+        }*/
+
+        /*{"case_number":" "14174300", "date": "2014-08-17", "time": "12:30:00", "code": 640", "incident": "Theft", "police_grid": 61, "neighborhood_number": 12, "block": "76X RAYMOND AV}*/
+
+        let incidents = '[ ';
+        rows.forEach((item) => {
+            incidents += '{"case_number": "' + item.case_number + '", ';
+            let date = item.date_time;
+            date = date.split("T");
+            //console.log(date[0]);
+            incidents += '"date": "' + date[0] + '", "time": "' + date[1] + '", "code": ' + item.code + ', "incident": "' + item.incident + '", "police_grid": ' + item.police_grid + ', "neighborhood_number": ' + item.neighborhood_number + ', "block": "' + item.block + '"}, ';
+        });
+
+        incidents = incidents.slice(0, -2);
+        incidents += ' ]';
+        incidents = JSON.parse(incidents);
+        console.log(incidents);
+
+        res.status(200).type('json').send(incidents);
+    })
+    .catch((error) => {
+        res.status(500).type('txt').send(error);
+    });
 });
 
 // PUT request handler for new crime incident
