@@ -117,28 +117,7 @@ app.get('/incidents', (req, res) => {
     dbSelect(sqlQuery, params)
     .then((rows) => {
         //console.log(rows[0].incident_type);
-        /*{ want
-            "case_number": "19245020",
-            "date": "2019-10-30",
-            "time": "23:57:08",
-            "code": 9954,
-            "incident": "Proactive Police Visit",
-            "police_grid": 87,
-            "neighborhood_number": 7,
-            "block": "THOMAS AV  & VICTORIA"
-        }*/
-
-        /*{ actual
-            "case_number":"14174473",
-            "date_time":"2014-08-17T18:24:00",
-            "code":500,
-            "incident":"Burglary",
-            "police_grid":120,
-            "neighborhood_number":1,
-            "block":"215X WILSON AV"
-        }*/
-
-        /*{"case_number":" "14174300", "date": "2014-08-17", "time": "12:30:00", "code": 640", "incident": "Theft", "police_grid": 61, "neighborhood_number": 12, "block": "76X RAYMOND AV}*/
+        
 
         let incidents = '[ ';
         rows.forEach((item) => {
