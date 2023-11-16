@@ -3,12 +3,15 @@
     "description": "REST Server",
     "version": "1.0.0",
     "author": {
-        "name": "",
-        "email": ""
+        "name": "Paku Thao",
+        "email": "thao2210@stthomas.edu"
     },
     "contributors": [
+        "Rafay Web",
+        "Russell Ostergaard"
     ],
-    "repository": {},
+    "repository": {
+        "url": "https://github.com/pkjthao/webdev-rest"},
     "dependencies": {
         "express": "^4.18.2",
         "sqlite3": "^5.1.6"
