@@ -64,8 +64,6 @@ app.get('/codes', (req, res) => {
 
     dbSelect(sqlQuery)
     .then((rows) => {
-        //console.log(rows);
-        //{"code": 100, "type": "MURDER"}
         let codes = '[ ';
         rows.forEach((res) => {
             codes += '{"code": ' + res.code + ', "type": "' + res.incident_type + '"}, ';
@@ -90,7 +88,6 @@ app.get('/neighborhoods', (req, res) => {
 
     dbSelect(sqlQuery)
     .then((rows) => {
-        // {"id": 1, "name": "Conway/Battlecreek/Highwood"},
         let neighborhoods = '[ ';
         rows.forEach((item) => {
             neighborhoods += '{"id": ' + item.neighborhood_number + ', "name": "' + item.neighborhood_name + '"}, ';
@@ -116,9 +113,6 @@ app.get('/incidents', (req, res) => {
 
     dbSelect(sqlQuery, params)
     .then((rows) => {
-        //console.log(rows[0].incident_type);
-        
-
         let incidents = '[ ';
         rows.forEach((item) => {
             incidents += '{"case_number": "' + item.case_number + '", ';
