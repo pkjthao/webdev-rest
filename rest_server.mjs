@@ -60,9 +60,10 @@ function dbRun(query, params) {
 app.get('/codes', (req, res) => {
     //console.log(req.query); // query object (key-value pairs after the ? in the url)
     let sqlQuery = 'Select * FROM Codes';
+    let params = [];
     console.log(sqlQuery);
 
-    dbSelect(sqlQuery)
+    dbSelect(sqlQuery, params)
     .then((rows) => {
         let codes = '[ ';
         rows.forEach((res) => {
@@ -84,9 +85,10 @@ app.get('/codes', (req, res) => {
 app.get('/neighborhoods', (req, res) => {
     //console.log(req.query); // query object (key-value pairs after the ? in the url)
     let sqlQuery = 'Select * FROM Neighborhoods';
+    let params = [];
     console.log(sqlQuery);
 
-    dbSelect(sqlQuery)
+    dbSelect(sqlQuery, params)
     .then((rows) => {
         let neighborhoods = '[ ';
         rows.forEach((item) => {
