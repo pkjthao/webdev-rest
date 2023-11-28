@@ -138,16 +138,65 @@ app.get('/incidents', (req, res) => {
 
 // PUT request handler for new crime incident
 app.put('/new-incident', (req, res) => {
-    console.log(req.body); // uploaded data
-    
-    res.status(200).type('txt').send('OK'); // <-- you may need to change this
+    const {
+        case_number,
+        date,
+        time,
+        code,
+        incident,
+        police_grid,
+        neighborhood_number,
+        block
+    } = req.body;
+
+    // Check if the case_number already exists in the database
+    const checkIfExistsQuery = 'SELECT * FROM Incidents WHERE case_number = ?';
+    const checkIfExistsParams = [case_number];
+
+    dbSelect(checkIfExistsQuery, checkIfExistsParams)
+        .then((rows) => {
+            if (rows.length > 0) {
+                // Case number already exists in the database
+                res.status(500).type('txt').send('Case number already exists in the database');
+            } else {
+                // Case number doesn't exist, proceed with insertion
+                const insertQuery = `
+                    INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, neighborhood_number, block)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                `;
+                const insertParams = [case_number, `${date}T${time}`, code, incident, police_grid, neighborhood_number, block];
+
+                return dbRun(insertQuery, insertParams);
+            }
+        })
+        .then(() => {
+            res.status(200).type('txt').send('Incident added successfully');
+        })
+        .catch((error) => {
+            res.status(500).type('txt').send(error);
+        });
 });
 
-// DELETE request handler for new crime incident
+// DELETE request handler for new crime incident 14172229
 app.delete('/remove-incident', (req, res) => {
-    console.log(req.body); // uploaded data
-    
-    res.status(200).type('txt').send('OK'); // <-- you may need to change this
+    const case_number  = req.query.case_number;
+    console.log(req.query.case_number);
+
+    const deleteQuery = 'DELETE FROM Incidents WHERE case_number = ?';
+    const deleteParams = [case_number];
+
+    dbRun(deleteQuery, deleteParams)
+        .then((result) => {
+            if (result.changes === 0) {
+                // Case number doesn't exist in the database
+                res.status(500).type('txt').send('Case number does not exist in the database');
+            } else {
+                res.status(200).type('txt').send('Incident removed successfully');
+            }
+        })
+        .catch((error) => {
+            res.status(500).type('txt').send(error);
+        });
 });
 
 /********************************************************************
