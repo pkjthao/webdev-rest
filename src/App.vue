@@ -2,6 +2,7 @@
 import { reactive, ref, onMounted } from 'vue'
 
 let crime_url = ref('');
+let crime_data = reactive([]);
 let dialog_err = ref(false);
 let map = reactive(
     {
@@ -70,8 +71,19 @@ onMounted(() => {
 // FUNCTIONS
 // Function called once user has entered REST API URL
 function initializeCrimes() {
+    console.log(crime_url.value);
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
+    let url = crime_url.value;
+    Promise.all(fetch(url))
+    .then((res) => {
+        return res.json();
+    })
+    .then((data) => {
+        crime_data = data;
+        console.log(crime_data);
+    })
+
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -101,6 +113,11 @@ function closeDialog() {
     <div class="grid-container ">
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
+        </div>
+        <div class="grid-x grid-padding-x">
+            <ul>
+                <li> hello</li>
+            </ul>
         </div>
     </div>
 </template>
