@@ -1,7 +1,9 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted } from 'vue';
+import CrimeRow from './components/CrimeRow.vue';
 
 let crime_url = ref('');
+let location = ref('');
 let crime_data = reactive([]);
 let dialog_err = ref(false);
 let map = reactive(
@@ -71,19 +73,25 @@ onMounted(() => {
 // FUNCTIONS
 // Function called once user has entered REST API URL
 function initializeCrimes() {
-    console.log(crime_url.value);
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
     let url = crime_url.value;
-    Promise.all(fetch(url))
+
+    url = url + "incidents";
+
+    console.log(url);
+    fetch(url)
     .then((res) => {
         return res.json();
     })
     .then((data) => {
+        console.log(data);
         crime_data = data;
-        console.log(crime_data);
     })
-
+    .catch((error) => {
+        console.log(error);
+    })
+    
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -98,6 +106,10 @@ function closeDialog() {
     else {
         dialog_err.value = true;
     }
+}
+
+function getLocation() {
+    console.log(location.value);
 }
 </script>
 
@@ -114,10 +126,28 @@ function closeDialog() {
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
         </div>
+        <br>
         <div class="grid-x grid-padding-x">
-            <ul>
-                <li> hello</li>
-            </ul>
+            <label>Location: </label>
+            <input id="loc" type="text" v-model="location" placeholder="Enter location"/>
+            <button class="button" type="button" @click="getLocation">Go</button>
+        </div>
+        <br>
+        <div class="grid-x grid-padding-x">
+            <table>
+                <thead>
+                    <th>Case Number</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Incident</th>
+                    <th>Police Grid</th>
+                    <th>Neighborhood</th>
+                    <th>Block</th>
+                </thead>
+                <tbody>
+                    <CrimeRow v-for="crime in crime_data" :data="crime"></CrimeRow>
+                </tbody>
+            </table>
         </div>
     </div>
 </template>

@@ -3,6 +3,7 @@ import * as url from 'node:url';
 
 import { default as express } from 'express';
 import { default as sqlite3 } from 'sqlite3';
+import { default as cors } from 'cors';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const db_filename = path.join(__dirname, 'db', 'stpaul_crime.sqlite3');
@@ -10,7 +11,10 @@ const db_filename = path.join(__dirname, 'db', 'stpaul_crime.sqlite3');
 const port = 8000;
 
 let app = express();
+app.use(cors())
 app.use(express.json());
+
+
 
 /********************************************************************
  ***   DATABASE FUNCTIONS                                         *** 
