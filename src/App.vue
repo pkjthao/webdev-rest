@@ -114,8 +114,8 @@ onMounted(() => {
             }
             i++;
         });
-
-        //console.log(neighborhoods);
+        this.initializeCrimes();
+        console.log(neighborhoods);
         console.log(max_bounds);
         
 
@@ -149,7 +149,7 @@ function initializeCrimes() {
     //       get initial 1000 crimes
     let url = crime_url.value;
     url = url + "/incidents";
-    console.log(neighborhoods);
+    //console.log(neighborhoods);
 
     //console.log(url);
     fetch(url)
@@ -244,7 +244,7 @@ function getLocation() {
                     <th>Block</th>
                 </thead>
                 <tbody>
-                    <CrimeRow v-for="crime in crime_data" :data="crime"></CrimeRow>
+                    <CrimeRow v-for="crime in crime_data" :data="crime" :url="crime_url"></CrimeRow>
                 </tbody>
             </table>
         </div>

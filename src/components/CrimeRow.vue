@@ -1,5 +1,8 @@
 <script setup>
-    defineProps(['data']);
+    const props = defineProps({
+        data: Object,
+        url: String // Ensure 'url' is passed as a prop
+    });
 
     const getNeighborhoodName = {
         1: 'Conway/Battlecreek/Highwood',
@@ -20,7 +23,24 @@
         16: 'Summit Hill',
         17: 'Capitol River'
     }
+    //console.log(props.url);
 
+    async function deleteCrime(id) {
+        try {
+            const response = await fetch(`${props.url}/remove-incident/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                // Remove the deleted crime from the UI
+                // Update crime_data array or trigger a refresh of the crime list
+            } else {
+                console.error('Failed to delete crime:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error deleting crime:', error);
+        }
+    }
 </script>
 
 <template>
@@ -32,6 +52,7 @@
         <td>{{ data.police_grid }}</td>
         <td>{{ getNeighborhoodName[data.neighborhood_number]}}</td>
         <td>{{ data.block }}</td>
+        <td><button class="button" @click="deleteCrime(data.case_number)">Delete</button></td>
     </tr>
 </template>
 
