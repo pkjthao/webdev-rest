@@ -271,8 +271,10 @@ function filteredcrimes(param0, param1, param2, param3, param4) {
             </div>
             <div class="cell auto">
                 <p>Select Neighborhood(s)</p>
-                <input type="checkbox" id="neighborhood" value="type1" v-model="neighborhood">
-                <label for="type1">Type1</label>
+                <span v-for="item in getNeighborhoodName">
+                <input type="checkbox" id="neighborhood" value="item.price" v-model="neighborhood">
+                <label>{{item.price}}</label>
+                </span>
             </div>
             <div class="cell auto">
                 <p>Start Date</p>
