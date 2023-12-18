@@ -71,6 +71,14 @@ function sendNewCrimeReport() {
         })
         .then(updatedData => {
             console.log('Data updated:', updatedData);
+            case_num.value = '';
+            date.value = '';
+            time.value = '';
+            code.value = '';
+            incident.value = '';
+            police_grid.value = '';
+            neigh_num.value = '';
+            block.value = '';
         })
         .catch(error => {
             console.error('Error updating data:', error);

@@ -3,6 +3,7 @@ import { reactive, ref, onMounted } from 'vue';
 import CrimeRow from './components/CrimeRow.vue';
 import Popup from './components/Popup.vue'
 
+
 let crime_url = ref('');
 let location = ref('');
 let crime_data = reactive([]);
@@ -45,26 +46,43 @@ let map = reactive(
     }
 );
 
+let conway = 0;
+let greaterEast = 0;
+let westSide = 0;
+let dayton = 0;
+let payne = 0;
+let northEnd = 0;
+let thomas = 0;
+let summit = 0;
+let westSeven = 0;
+let como = 0;
+let hamline = 0;
+let stAnth = 0;
+let union = 0;
+let macal = 0;
+let highland = 0;
+let summitHill = 0;
+let capitol = 0;
 
 
 const getNeighborhoodName = {
-        1: 'Conway/Battlecreek/Highwood',
-        2: 'Greater East Side',
-        3: 'West Side',
-        4: 'Dayton\'s Bluff',
-        5: 'Payne/Phalen',
-        6: 'North End',
-        7: 'Thomas/Dale(Frogtown)',
-        8: 'Summit/University',
-        9: 'West Seventh',
-        10: 'Como',
-        11: 'Hamline/Midway',
-        12: 'St. Anthony',
-        13: 'Union Park',
-        14: 'Macalester-Groveland',
-        15: 'Highland',
-        16: 'Summit Hill',
-        17: 'Capitol River'
+        1: ['Conway/Battlecreek/Highwood', conway],
+        2: ['Greater East Side', greaterEast],
+        3: ['West Side', westSide],
+        4: ['Dayton\'s Bluff', dayton],
+        5: ['Payne/Phalen', payne],
+        6: ['North End', northEnd],
+        7: ['Thomas/Dale(Frogtown)', thomas],
+        8: ['Summit/University', summit],
+        9: ['West Seventh', westSeven],
+        10: ['Como', como],
+        11: ['Hamline/Midway', hamline],
+        12: ['St. Anthony', stAnth],
+        13: ['Union Park', union],
+        14: ['Macalester-Groveland', macal],
+        15: ['Highland', highland],
+        16: ['Summit Hill', summitHill],
+        17: ['Capitol River', capitol]
     }
 
 
@@ -82,9 +100,10 @@ onMounted(() => {
     //Markers
     let id = 1;
     map.neighborhood_markers.forEach((latlang) => {
-        L.marker(latlang.location, {alt: id}).addTo(map.leaflet).bindPopup(getNeighborhoodName[id]);
+        latlang.marker = L.marker(latlang.location, {alt: id}).addTo(map.leaflet).bindPopup(getNeighborhoodName[id][0]);
         id++;
     })
+    map.neighborhood_markers[0].marker.setPopupContent('' + dayton);
     map.leaflet.on('moveend', () => {
         let cord = map.leaflet.getCenter();
         let url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + cord.lat + '&lon=' + cord.lng;
@@ -117,7 +136,7 @@ onMounted(() => {
         });
         let x = initializeCrimes();
         //console.log(neighborhoods);
-        console.log(max_bounds);
+        //console.log(max_bounds);
         
 
     });
@@ -150,7 +169,7 @@ function initializeCrimes() {
     //       get initial 1000 crimes
     let url = crime_url.value;
     url = url + "/incidents";
-    console.log(neighborhoods);
+    //console.log(neighborhoods);
     if(neighborhoods.length > 0) {
         url = url + '?neighborhood=';
         neighborhoods.forEach((num) => {
@@ -159,7 +178,7 @@ function initializeCrimes() {
         url = url.slice(0, -1);
     }
 
-    console.log(url);
+    //console.log(url);
     fetch(url)
     .then((res) => {
         return res.json();
@@ -171,7 +190,32 @@ function initializeCrimes() {
     .catch((error) => {
         console.log(error);
     })
+
+    crime_data.forEach((crime) => {
+        let x = crime.neighborhood_number;
+        getNeighborhoodName[x][1] += 1;
+    });
+    console.log(getNeighborhoodName[1][1]);
     
+}
+let marker = null;
+function addressMarker(data) {
+    if(data.delete) {
+    var greenIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+    //console.log(data);
+    let info = "Date: " + data.crimeData.date + ', Time: ' + data.crimeData.time + ', Incident: ' + data.crimeData.incident;
+    marker = L.marker([data.data.lat, data.data.lon], {icon: greenIcon}).addTo(map.leaflet).bindPopup(info);
+    }
+    else {
+        map.leaflet.removeLayer(marker);
+    }
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -189,7 +233,7 @@ function closeDialog() {
 }
 
 function getLocation() {
-    console.log(location.value);
+   // console.log(location.value);
     let address = location.value + ' St.Paul MN';
     let url = 'https://nominatim.openstreetmap.org/search?q=' + address + '&format=json&&limit=1';
     fetch(url)
@@ -199,7 +243,8 @@ function getLocation() {
     .then((loc) => {
         loc_err.value = false;
         let locData = loc[0];
-        console.log(locData);
+        //console.log(locData);
+        map.leaflet.zoomIn(16);
         map.leaflet.panTo([locData.lat, locData.lon]);
         map.leaflet.zoomIn(16);
     })
@@ -250,9 +295,11 @@ function getLocation() {
                     <th>Police Grid</th>
                     <th>Neighborhood</th>
                     <th>Block</th>
+                    <th></th>
+                    <th></th>
                 </thead>
                 <tbody>
-                    <CrimeRow v-for="crime in crime_data" :data="crime" :url="crime_url"></CrimeRow>
+                    <CrimeRow v-for="crime in crime_data" @addressMarker="addressMarker" :data="crime" :url="crime_url"></CrimeRow>
                 </tbody>
             </table>
         </div>
