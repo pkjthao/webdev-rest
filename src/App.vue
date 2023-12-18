@@ -104,18 +104,19 @@ onMounted(() => {
         })
         
         max_bounds = [];
+        neighborhoods = [];
         let bounds = map.leaflet.getBounds();
         max_bounds.push(bounds.getNorthWest());
         max_bounds.push(bounds.getSouthEast());
         let i = 1;
         map.neighborhood_markers.forEach((neighborhood) => {
             if(bounds.contains(neighborhood.location)) {
-                neighborhoods.push(getNeighborhoodName[i]);
+                neighborhoods.push(i);
             }
             i++;
         });
-        this.initializeCrimes();
-        console.log(neighborhoods);
+        let x = initializeCrimes();
+        //console.log(neighborhoods);
         console.log(max_bounds);
         
 
@@ -149,15 +150,22 @@ function initializeCrimes() {
     //       get initial 1000 crimes
     let url = crime_url.value;
     url = url + "/incidents";
-    //console.log(neighborhoods);
+    console.log(neighborhoods);
+    if(neighborhoods.length > 0) {
+        url = url + '?neighborhood=';
+        neighborhoods.forEach((num) => {
+            url += num + ',';
+        })
+        url = url.slice(0, -1);
+    }
 
-    //console.log(url);
+    console.log(url);
     fetch(url)
     .then((res) => {
         return res.json();
     })
     .then((data) => {
-        console.log(data);
+        //console.log(data);
         crime_data = data;
     })
     .catch((error) => {
