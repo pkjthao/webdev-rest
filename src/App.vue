@@ -1,13 +1,17 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue';
 import CrimeRow from './components/CrimeRow.vue';
+import Popup from './components/Popup.vue'
 
 const filteredIncidents = ref([]);
 const filter = ref(true);
 let crime_url = ref('');
 let location = ref('');
 let crime_data = reactive([]);
+let max_bounds = reactive([]);
+let neighborhoods = reactive([]);
 let dialog_err = ref(false);
+let loc_err = ref(false);
 let map = reactive(
     {
         leaflet: null,
@@ -43,6 +47,29 @@ let map = reactive(
     }
 );
 
+
+
+const getNeighborhoodName = {
+        1: 'Conway/Battlecreek/Highwood',
+        2: 'Greater East Side',
+        3: 'West Side',
+        4: 'Dayton\'s Bluff',
+        5: 'Payne/Phalen',
+        6: 'North End',
+        7: 'Thomas/Dale(Frogtown)',
+        8: 'Summit/University',
+        9: 'West Seventh',
+        10: 'Como',
+        11: 'Hamline/Midway',
+        12: 'St. Anthony',
+        13: 'Union Park',
+        14: 'Macalester-Groveland',
+        15: 'Highland',
+        16: 'Summit Hill',
+        17: 'Capitol River'
+    }
+
+
 // Vue callback for once <template> HTML has been added to web page
 onMounted(() => {
     // Create Leaflet map (set bounds and valied zoom levels)
@@ -54,6 +81,48 @@ onMounted(() => {
     }).addTo(map.leaflet);
     map.leaflet.setMaxBounds([[44.883658, -93.217977], [45.008206, -92.993787]]);
 
+    //Markers
+    let id = 1;
+    map.neighborhood_markers.forEach((latlang) => {
+        L.marker(latlang.location, {alt: id}).addTo(map.leaflet).bindPopup(getNeighborhoodName[id]);
+        id++;
+    })
+    map.leaflet.on('moveend', () => {
+        let cord = map.leaflet.getCenter();
+        let url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + cord.lat + '&lon=' + cord.lng;
+        //console.log(url);
+        fetch(url)
+        .then((res) => {
+            return res.json();
+        })
+        .then((loc) => {
+            let locData = loc.address.road;
+            console.log(locData);
+            location.value = locData;
+            
+        })
+        .catch((error) => {
+            console.log(error);
+        })
+        
+        max_bounds = [];
+        let bounds = map.leaflet.getBounds();
+        max_bounds.push(bounds.getNorthWest());
+        max_bounds.push(bounds.getSouthEast());
+        let i = 1;
+        map.neighborhood_markers.forEach((neighborhood) => {
+            if(bounds.contains(neighborhood.location)) {
+                neighborhoods.push(getNeighborhoodName[i]);
+            }
+            i++;
+        });
+        this.initializeCrimes();
+        console.log(neighborhoods);
+        console.log(max_bounds);
+        
+
+    });
+
     // Get boundaries for St. Paul neighborhoods
     let district_boundary = new L.geoJson();
     district_boundary.addTo(map.leaflet);
@@ -64,11 +133,14 @@ onMounted(() => {
     .then((result) => {
         result.features.forEach((value) => {
             district_boundary.addData(value);
+            //console.log(value);
         });
     })
     .catch((error) => {
         console.log('Error:', error);
     });
+
+    console.log(district_boundary._layers);
 });
 
 
@@ -78,10 +150,10 @@ function initializeCrimes() {
     // TODO: get code and neighborhood data
     //       get initial 1000 crimes
     let url = crime_url.value;
+    url = url + "/incidents";
+    //console.log(neighborhoods);
 
-    url = url + "incidents";
-
-    console.log(url);
+    //console.log(url);
     fetch(url)
     .then((res) => {
         return res.json();
@@ -112,6 +184,24 @@ function closeDialog() {
 
 function getLocation() {
     console.log(location.value);
+    let address = location.value + ' St.Paul MN';
+    let url = 'https://nominatim.openstreetmap.org/search?q=' + address + '&format=json&&limit=1';
+    fetch(url)
+    .then((res) => {
+        return res.json();
+    })
+    .then((loc) => {
+        loc_err.value = false;
+        let locData = loc[0];
+        console.log(locData);
+        map.leaflet.panTo([locData.lat, locData.lon]);
+        map.leaflet.zoomIn(16);
+    })
+    .catch((error) => {
+        console.log(error);
+        loc_err.value = true;
+    })
+
 }
 
 //Funciton is called when user presses button and toggles the data displayed. 
@@ -153,13 +243,16 @@ function filteredcrimes(param0, param1, param2, param3, param4) {
         <button class="button" type="button" @click="closeDialog">OK</button>
     </dialog>
     <div class="grid-container ">
+        <br>
+        <br>
+        <br>
         <div class="grid-x grid-padding-x">
             <div id="leafletmap" class="cell auto"></div>
         </div>
         <br>
         <div class="grid-x grid-padding-x">
             <label>Location: </label>
-            <input id="loc" type="text" v-model="location" placeholder="Enter location"/>
+            <input id="loc" type="text" v-model="location" placeholder="Enter location" style="width: 25rem;"/>
             <button class="button" type="button" @click="getLocation">Go</button>
         </div>
         <br>
@@ -192,7 +285,13 @@ function filteredcrimes(param0, param1, param2, param3, param4) {
                 <input v-model="max" placeholder="No Max Selected">
             </div>
         </div>
+        <div class="grid-x grid-padding-x">
+            <p class="dialog-error" v-if="loc_err">Error: must enter valid address</p>
+        </div>
         <br>
+        <div class="grid-x grid-padding-x">
+            <Popup :url="crime_url"/>
+        </div>
         <div class="grid-x grid-padding-x">
             <table>
                 <thead>
