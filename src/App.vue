@@ -2,6 +2,8 @@
 import { reactive, ref, onMounted } from 'vue';
 import CrimeRow from './components/CrimeRow.vue';
 
+const filteredIncidents = ref([]);
+const filter = ref(true);
 let crime_url = ref('');
 let location = ref('');
 let crime_data = reactive([]);
@@ -111,6 +113,34 @@ function closeDialog() {
 function getLocation() {
     console.log(location.value);
 }
+
+//Funciton is called when user presses button and toggles the data displayed. 
+function toggle(){
+    filter.value = !filter.value;
+}
+
+/*
+Function is called when user has entered fitering values
+Param0 is a array that will have the incident type/types that are to be displayed
+Param1 is a array with selected neighborhood names
+Param2 and 3 is a selected start and end date
+Param4 is a int with the amount of incidents that it will show
+*/
+function filteredcrimes(param0, param1, param2, param3, param4) {
+    url = url + "incidents";//param0 + param1 + param2 + param3 + param4;
+    fetch(url)
+    .then((res) => {
+        return res.json();
+    })
+    .then((data) => {
+       console.log(data);
+        crime_data = data;
+    })
+    .catch((error) => {
+        console.log(error);
+    })
+}
+
 </script>
 
 <template>
@@ -134,6 +164,36 @@ function getLocation() {
         </div>
         <br>
         <div class="grid-x grid-padding-x">
+            <div class="cell">
+                <h1> Filters </h1>
+            </div>
+            <div class="cell auto">
+            <button v-if="filter" class="button" type="button" @click="toggle">Apply</button>
+            <button v-else class="button" type="button" @click="toggle">Reset</button>
+            </div>
+            <div class="cell auto">
+                <p>Select Incident Type(s)</p>
+                <input type="checkbox" id="incidenttypes" value="type1" v-model="filteredIncidents">
+                <label for="type1">Type1</label>
+            </div>
+            <div class="cell auto">
+                <p>Select Neighborhood(s)</p>
+                <input type="checkbox" id="neighborhood" value="type1" v-model="neighborhood">
+                <label for="type1">Type1</label>
+            </div>
+            <div class="cell auto">
+                <p>Start Date</p>
+                <input v-model="start" placeholder="No Start Date Selected">
+                <p>End Date</p>
+                <input v-model="start" placeholder="No end Date Selected">
+            </div>
+            <div class="cell auto">
+                <p>Max Cases Shown</p>
+                <input v-model="max" placeholder="No Max Selected">
+            </div>
+        </div>
+        <br>
+        <div class="grid-x grid-padding-x">
             <table>
                 <thead>
                     <th>Case Number</th>
@@ -144,7 +204,10 @@ function getLocation() {
                     <th>Neighborhood</th>
                     <th>Block</th>
                 </thead>
-                <tbody>
+                <tbody v-if="filter">
+                    <CrimeRow v-for="crime in crime_data" :data="crime"></CrimeRow>
+                </tbody>
+                 <tbody v-else>
                     <CrimeRow v-for="crime in crime_data" :data="crime"></CrimeRow>
                 </tbody>
             </table>
