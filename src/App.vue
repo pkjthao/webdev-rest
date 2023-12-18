@@ -4,9 +4,14 @@ import CrimeRow from './components/CrimeRow.vue';
 import Popup from './components/Popup.vue'
 
 const filteredIncidents = ref([]);
+const filteredNeighborhood = ref([]);
 const filter = ref(true);
+let start_date = reactive('');
+let end_date = reactive('');
+let max_shown = reactive('');
 let crime_url = ref('');
 let location = ref('');
+let new_crime_data = reactive([]);
 let crime_data = reactive([]);
 let max_bounds = reactive([]);
 let neighborhoods = reactive([]);
@@ -209,6 +214,11 @@ function toggle(){
     filter.value = !filter.value;
 }
 
+// funcition groups crime data and neighborhood names into two arrays to use for filter options
+function filterSetup(){
+
+}
+
 /*
 Function is called when user has entered fitering values
 Param0 is a array that will have the incident type/types that are to be displayed
@@ -216,20 +226,81 @@ Param1 is a array with selected neighborhood names
 Param2 and 3 is a selected start and end date
 Param4 is a int with the amount of incidents that it will show
 */
-function filteredcrimes(param0, param1, param2, param3, param4) {
-    url = url + "incidents";//param0 + param1 + param2 + param3 + param4;
+function filteredCrimes(param0, param1, param2, param3, param4) {
+    var neighborhoodList ="/neighborhoods?id=" + param1[0];
+    var incidentTypes = "/incidents?code=" + param0[0];
+    var start = "/incidents?start_date=";
+    var end = "/incidents?end_date=";
+    var limit = "/incidents?limit=";
+    let url = crime_url.value;
+    // sets up the string for the neighbohood url input
+    for(let i = 1; i < param1.length; i++){
+        neighborhoodList = neighborhoodList + "," + param1[i];        
+    };
+    // sets up the string for the incident type url input
+    for(let i = 1; i < param0.length; i++){
+        incidentTypes = incidentTypes + "," + param0[i];
+    }
+
+    // if no boxes were checked for neighborhoods get rid of that part from the url
+    if(param1.length == 0){
+        neighborhoodList = "";
+    }
+    //if not boxes were checked for incident types get rid of that part from the url
+    if(param0.length == 0){
+        incidentTypes = "";
+    }
+    // if start date is before end date good to go otherwise wipe from url
+    if(param2 < param3){
+        start = start + param2;
+        end = end + param3;
+    }
+    else{
+        start = "";
+        end = "";
+    }
+    // if limit is less than 1 wipe from url
+    if(limit < 1){
+        limit = "";
+    }
+    else{
+        limit = limit + param4.value;
+    }
+    // string concatinates the filtered parameters together to make the url.
+    url = url + incidentTypes + neighborhoodList + start + end + limit;
     fetch(url)
     .then((res) => {
         return res.json();
     })
     .then((data) => {
        console.log(data);
-        crime_data = data;
+        new_crime_data = data;
     })
     .catch((error) => {
         console.log(error);
     })
 }
+
+//data for the neighborhood checkboxes
+const checkNeighborhood = ref([
+        {message: 'Conway/Battlecreek/Highwood'},
+        {message: 'Greater East Side'},
+        {message: 'West Side'},
+        {message: 'Dayton\'s Bluff'},
+        {message: 'Payne/Phalen'},
+        {message: 'North End'},
+        {message: 'Thomas/Dale(Frogtown)'},
+        {message: 'Summit/University'},
+        {message: 'West Seventh'},
+        {message: 'Como'},
+        {message: 'Hamline/Midway'},
+        {message: 'St. Anthony'},
+        {message: 'Union Park'},
+        {message: 'Macalester-Groveland'},
+        {message: 'Highland'},
+        {message: 'Summit Hill'},
+        {message: 'Capitol River'}
+])
 
 </script>
 
@@ -261,7 +332,7 @@ function filteredcrimes(param0, param1, param2, param3, param4) {
                 <h1> Filters </h1>
             </div>
             <div class="cell auto">
-            <button v-if="filter" class="button" type="button" @click="toggle">Apply</button>
+            <button v-if="filter" class="button" type="button" @click="toggle(); filteredCrimes(filteredIncidents, filteredNeighborhood, start_date, end_date, max_shown)">Apply</button>
             <button v-else class="button" type="button" @click="toggle">Reset</button>
             </div>
             <div class="cell auto">
@@ -271,20 +342,21 @@ function filteredcrimes(param0, param1, param2, param3, param4) {
             </div>
             <div class="cell auto">
                 <p>Select Neighborhood(s)</p>
-                <span v-for="item in getNeighborhoodName">
-                <input type="checkbox" id="neighborhood" value="item.price" v-model="neighborhood">
-                <label>{{item.price}}</label>
+                <span v-for="(item, index) in checkNeighborhood">
+                <input type="checkbox" :value="index" v-model="filteredNeighborhood">
+                <label>{{item.message}}</label>
+                <br>
                 </span>
             </div>
             <div class="cell auto">
                 <p>Start Date</p>
-                <input v-model="start" placeholder="No Start Date Selected">
+                <input v-model="start_date" placeholder="No Start Date Selected">
                 <p>End Date</p>
-                <input v-model="start" placeholder="No end Date Selected">
+                <input v-model="end_date" placeholder="No end Date Selected">
             </div>
             <div class="cell auto">
                 <p>Max Cases Shown</p>
-                <input v-model="max" placeholder="No Max Selected">
+                <input v-model="max_shown" placeholder="No Max Selected">
             </div>
         </div>
         <div class="grid-x grid-padding-x">
@@ -309,7 +381,7 @@ function filteredcrimes(param0, param1, param2, param3, param4) {
                     <CrimeRow v-for="crime in crime_data" :data="crime"></CrimeRow>
                 </tbody>
                  <tbody v-else>
-                    <CrimeRow v-for="crime in crime_data" :data="crime"></CrimeRow>
+                    <CrimeRow v-for="crime in new_crime_data" :data="crime"></CrimeRow>
                 </tbody>
             </table>
         </div>
