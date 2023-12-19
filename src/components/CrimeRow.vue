@@ -114,4 +114,16 @@
     .other-crimes{
         background-color: #edd55a;
     }
+
+    .violent-crimes{
+        background-color:#b84b56;
+    }
+
+    .property-crimes{
+        background-color:orange;
+    }
+
+    .other-crimes{
+        background-color: #edd55a;
+    }
 </style>

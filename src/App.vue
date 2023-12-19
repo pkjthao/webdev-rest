@@ -3,7 +3,13 @@ import { reactive, ref, onMounted } from 'vue';
 import CrimeRow from './components/CrimeRow.vue';
 import Popup from './components/Popup.vue'
 
-
+let filteredIncidents = ref([]);
+let filteredNeighborhood = ref([]);
+let checkIncidents = ref([]);
+let filter = ref(true);
+let start_date = ref('');
+let end_date = ref('');
+let max_shown = ref('');
 let crime_url = ref('');
 let location = ref('');
 let crime_data = reactive([]);
@@ -163,6 +169,11 @@ onMounted(() => {
 
 
 // FUNCTIONS
+//Funciton is called when user presses button and toggles the data displayed. 
+function toggle(){
+    filter.value = !filter.value;
+    initializeCrimes();
+}
 // Function called once user has entered REST API URL
 function initializeCrimes() {
     // TODO: get code and neighborhood data
@@ -170,58 +181,110 @@ function initializeCrimes() {
     let url = crime_url.value;
     url = url + "/incidents";
     //console.log(neighborhoods);
-    if(neighborhoods.length > 0) {
-        url = url + '?neighborhood=';
-        neighborhoods.forEach((num) => {
-            url += num + ',';
+    //changed will keep track and see if any filters were selected
+    let changed = ref(false);
+    // if filter is not true aka filter is on
+    console.log(filter.value)
+    if(!filter.value){
+        console.log('in')
+        let neighborhoodList = "neighborhood=";
+        let incidentTypes = "code=";
+        let start = "start_date=";
+        let end = "end_date=";
+        let limit = "limit="
+        // if no boxes were checked for neighborhoods get rid of that part from the url
+        if(filteredNeighborhood[0] == undefined || filteredNeighborhood.length == 0){
+            neighborhoodList = "";
+        }
+        else{
+            changed.value = true;
+            neighborhoodList = neighborhoodList + filteredNeighborhood[0];
+            for(let i = 1; i < filteredNeighborhood.length; i++){
+                neighborhoodList = neighborhoodList + "," + filteredNeighborhood[i];        
+            };
+        }
+        //if not boxes were checked for incident types get rid of that part from the url
+        if(filteredIncidents[0] == undefined || filteredIncidents.length == 0){
+            incidentTypes = "";
+        }
+        else{
+            incidentTypes = incidentTypes + filteredIncidents[0];
+            for(let i = 1; i < filteredIncidents.length; i++){
+                incidentTypes = incidentTypes + "," + filteredIncidents[i];
+            }
+            if(changed.value){
+                incidentTypes = "&" + incidentTypes;
+            }
+            changed.value = true;
+        }
+        // if start date is before end date good to go otherwise wipe from url
+        if(start_date < end_date){
+            if(changed.value){
+                start = "&" + start + start_date;
+            }
+            else{
+                start = start + start_date;
+            }
+            end = "&" + end + end_date;
+            changed.value = true;
+        }
+        else if(start_date < 0 && end_date == ""){
+            if(changed.value){
+                start = "&" + start + start_date;
+            }
+            else{
+                start = start + start_date;
+            }
+            changed.value = true;
+        }
+        else{
+            start = "";
+            end = "";
+        }
+        console.log(max_shown);
+        // if limit is less than 1 wipe from url
+        if(max_shown.value > 0){
+            if(changed.value){
+                limit = "&" + limit + max_shown.value;
+            }
+            else{
+                limit = limit + max_shown.value;
+            }
+            changed.value = true;
+        }
+        else{
+            limit = "";
+        }
+        // string concatinates the filtered parameters together to make the url.
+        if(changed.value){
+            url = url + "?" + neighborhoodList + incidentTypes + start + end + limit;
+        }
+        console.log(url);
+        fetch(url)
+        .then((res) => {
+            return res.json();
+         })
+        .then((data) => {
+            console.log(data);
+            crime_data = data;
         })
-        url = url.slice(0, -1);
+        .catch((error) => {
+           console.log(error);
+        })
     }
-
-    //console.log(url);
-    fetch(url)
-    .then((res) => {
-        return res.json();
-    })
-    .then((data) => {
-        //console.log(data);
-        crime_data = data;
-    })
-    .catch((error) => {
-        console.log(error);
-    })
-
-    let y = 1;
-    for(y; y < 18; y++) {
-        getNeighborhoodName[y][1] = 0;
-    }
-        
-    crime_data.forEach((crime) => {
-        let x = crime.neighborhood_number;
-        getNeighborhoodName[x][1] += 1;
-    });
-    for(y = 0; y < 17; y++) {
-        map.neighborhood_markers[y].marker.setPopupContent(getNeighborhoodName[y + 1][0] + ': ' + getNeighborhoodName[y + 1][1] + ' crimes');
-    }
-    
-}
-let marker = null;
-function addressMarker(data) {
-    if(data.delete) {
-    var greenIcon = new L.Icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-    });
-    //console.log(data);
-    let info = "Date: " + data.crimeData.date + ', Time: ' + data.crimeData.time + ', Incident: ' + data.crimeData.incident;
-    marker = L.marker([data.data.lat, data.data.lon], {icon: greenIcon}).addTo(map.leaflet).bindPopup(info);
-    }
-    else {
-        map.leaflet.removeLayer(marker);
+    else{
+        //console.log(url);
+        fetch(url)
+        .then((res) => {
+            return res.json();
+        })
+        .then((data) => {
+            console.log(data);
+            crime_data = data;
+        })
+        .catch((error) => {
+            console.log(error);
+        })
     }
 }
 
@@ -261,6 +324,42 @@ function getLocation() {
     })
 
 }
+
+// funcition groups crime data into a array to use for filter options
+function filterSetup(){
+    let url = crime_url.value;
+    url = url + "/incidents";
+    for(let i = 0; i < crime_data.length; i++){
+        if(crime_data.incident in checkIncidents){
+            
+        }
+        else{
+            checkIncidents = crime_data.incident
+        }
+    }
+}
+
+//data for the neighborhood checkboxes
+const checkNeighborhood = ref([
+        {message: 'Conway/Battlecreek/Highwood'},
+        {message: 'Greater East Side'},
+        {message: 'West Side'},
+        {message: 'Dayton\'s Bluff'},
+        {message: 'Payne/Phalen'},
+        {message: 'North End'},
+        {message: 'Thomas/Dale(Frogtown)'},
+        {message: 'Summit/University'},
+        {message: 'West Seventh'},
+        {message: 'Como'},
+        {message: 'Hamline/Midway'},
+        {message: 'St. Anthony'},
+        {message: 'Union Park'},
+        {message: 'Macalester-Groveland'},
+        {message: 'Highland'},
+        {message: 'Summit Hill'},
+        {message: 'Capitol River'}
+])
+
 </script>
 
 <template>
@@ -285,12 +384,57 @@ function getLocation() {
             <input id="loc" type="text" v-model="location" placeholder="Enter location" style="width: 25rem;"/>
             <button class="button" type="button" @click="getLocation">Go</button>
         </div>
+        <br>
+        <div class="grid-x grid-padding-x">
+            <div class="cell">
+                <h1> Filters </h1>
+            </div>
+            <div class="cell auto">
+            <button v-if="filter" class="button" type="button" @click="toggle">Apply</button>
+            <button v-else class="button" type="button" @click="toggle">Reset</button>
+            </div>
+            <div class="cell auto">
+                <p>Select Incident Type(s)</p>
+                <span v-for="incident in checkIncidents">
+                <input type="checkbox" id="incidenttypes" value="incident" v-model="filteredIncidents">
+                <label>incident</label>
+                <br>
+                </span>
+            </div>
+            <div class="cell auto">
+                <p>Select Neighborhood(s)</p>
+                <span v-for="(item, index) in checkNeighborhood">
+                <input type="checkbox" :value="index" v-model="filteredNeighborhood">
+                <label>{{item.message}}</label>
+                <br>
+                </span>
+            </div>
+            <div class="cell auto">
+                <p>Start Date</p>
+                <input v-model="start_date" placeholder="No Start Date Selected">
+                <p>End Date</p>
+                <input v-model="end_date" placeholder="No end Date Selected">
+            </div>
+            <div class="cell auto">
+                <p>Max Cases Shown</p>
+                <input v-model="max_shown" placeholder="No Max Selected">
+            </div>
+        </div>
         <div class="grid-x grid-padding-x">
             <p class="dialog-error" v-if="loc_err">Error: must enter valid address</p>
         </div>
         <br>
         <div class="grid-x grid-padding-x">
             <Popup :url="crime_url"/>
+            <div class="cell auto">
+                <label class="violent-crimes">Violent Crimes</label>
+            </div>
+            <div class="cell auto">
+                <label class="property-crimes">Property Crimes</label>
+            </div>
+            <div class="cell auto">
+                <label class="other-crimes">Other Crimes</label>
+            </div>
         </div>
         <div class="grid-x grid-padding-x">
             <table>
@@ -306,7 +450,7 @@ function getLocation() {
                     <th></th>
                 </thead>
                 <tbody>
-                    <CrimeRow v-for="crime in crime_data" @addressMarker="addressMarker" :data="crime" :url="crime_url"></CrimeRow>
+                    <CrimeRow v-for="crime in crime_data" :data="crime" :key="crime.data"></CrimeRow>
                 </tbody>
             </table>
         </div>
@@ -341,5 +485,17 @@ function getLocation() {
 .dialog-error {
     font-size: 1rem;
     color: #D32323;
+}
+
+.violent-crimes{
+        background-color:#b84b56;
+    }
+
+.property-crimes{
+        background-color:orange;
+}
+
+.other-crimes{
+    background-color: #edd55a;
 }
 </style>
