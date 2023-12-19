@@ -4,6 +4,12 @@
         url: String // Ensure 'url' is passed as a prop
     });
 
+    const emits = defineEmits([
+        'addressMarker'
+    ])
+
+    let add = true;
+
     const getNeighborhoodName = {
         1: 'Conway/Battlecreek/Highwood',
         2: 'Greater East Side',
@@ -25,22 +31,52 @@
     }
     //console.log(props.url);
 
-    async function deleteCrime(id) {
-        try {
-            const response = await fetch(`${props.url}/remove-incident/${id}`, {
-                method: 'DELETE'
-            });
-
-            if (response.ok) {
-                // Remove the deleted crime from the UI
-                // Update crime_data array or trigger a refresh of the crime list
-            } else {
-                console.error('Failed to delete crime:', response.statusText);
+    function deleteCrime(case_number) {
+        // DELETE request using fetch with set headers
+        const element = document.querySelector('#delete-request-set-headers .status');
+       // let jsonString = JSON.parse(case_num);
+       // jsonString = JSON.stringify(jsonString);
+        const requestOptions = {
+            method: 'DELETE',
+            headers: { 
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({case_number})
+        };
+        console.log(requestOptions);
+        fetch(props.url + '/remove-incident', requestOptions)
+        .then((response) => {
+            if (!response.ok) {
+            throw new Error(`HTTP error ${response.status}`);
             }
-        } catch (error) {
-            console.error('Error deleting crime:', error);
-        }
+            return response.text();
+        })
+        .then((res) => {
+            console.log(res);
+        })
+        .catch((error) => {
+            console.error('Error updating data:', error);
+        })
     }
+
+    function addressMarker(address) {
+        if(address.includes(' AND ')) {
+            let str = address.split(' AND ');
+            address = str[0];
+        }
+        address = address + ' St Paul, MN';
+        fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`)
+        .then((res) => {
+            return res.json();
+        })
+        .then((data) => {
+            emits('addressMarker', {data: data[0], crimeData: props.data, delete: add});
+        })
+        .catch((error) => {
+            console.log(error);
+        })
+    }
+
 </script>
 
 <template>
@@ -48,25 +84,35 @@
         <td>{{ data.case_number }}</td>
         <td>{{ data.date }}</td>
         <td>{{ data.time }}</td>
-        <span v-if="(100<= data.code && data.code<= 453) || (810<=data.code && data.code <= 863)">
-        <td class="violent-crimes">{{ data.incident }}</td>
-        </span>
-        <span v-else-if="(500<= data.code && data.code<= 732) || (900<=data.code && data.code <= 1436)">
-        <td class="property-crimes">{{ data.incident }}</td>
-        </span>
-        <span v-else>
-        <td class="other-crimes">{{ data.incident }}</td>
-        </span>
+        <td class="violent-crimes" v-if="(100<= data.code && data.code<= 453) || (810<=data.code && data.code <= 863)">{{ data.incident }}</td>
+        <td class="property-crimes" v-else-if="(500<= data.code && data.code<= 732) || (900<=data.code && data.code <= 1436)">{{ data.incident }}</td>
+        <td class="other-crimes" v-else>{{ data.incident }}</td>
         <td>{{ data.police_grid }}</td>
         <td>{{ getNeighborhoodName[data.neighborhood_number]}}</td>
         <td>{{ data.block }}</td>
-        <td><button class="button" @click="deleteCrime(data.case_number)">Delete</button></td>
+        <td>
+            <button class="button" @click="add = true; addressMarker(data.block)">Add Map Marker</button>
+            <button class="button" @click="add = false; addressMarker(data.block)">Delete Marker</button>
+        </td>
+        <td><button class="button" @click="deleteCrime(data.case_number, crime_data)">Delete</button></td>
     </tr>
 </template>
 
 <style scoped>
     th, td {
         border: solid 1px #000000;
+    }
+
+    .violent-crimes{
+        background-color:#b84b56;
+    }
+
+    .property-crimes{
+        background-color:orange;
+    }
+
+    .other-crimes{
+        background-color: #edd55a;
     }
 
     .violent-crimes{
