@@ -5,6 +5,7 @@ import Popup from './components/Popup.vue'
 
 const filteredIncidents = ref([]);
 const filteredNeighborhood = ref([]);
+const checkIncidents = ref([]);
 const filter = ref(true);
 let start_date = reactive('');
 let end_date = reactive('');
@@ -214,9 +215,18 @@ function toggle(){
     filter.value = !filter.value;
 }
 
-// funcition groups crime data and neighborhood names into two arrays to use for filter options
+// funcition groups crime data into a array to use for filter options
 function filterSetup(){
-
+    let url = crime_url.value;
+    url = url + "/incidents";
+    for(let i = 0; i < crime_data.length; i++){
+        if(crime_data.InstanceType in checkIncidents){
+            
+        }
+        else{
+            checkIncidents = crime_data.InstanceType
+        }
+    }
 }
 
 /*
@@ -337,8 +347,11 @@ const checkNeighborhood = ref([
             </div>
             <div class="cell auto">
                 <p>Select Incident Type(s)</p>
-                <input type="checkbox" id="incidenttypes" value="type1" v-model="filteredIncidents">
-                <label for="type1">Type1</label>
+                <span v-for="incident in checkIncidents">
+                <input type="checkbox" id="incidenttypes" value="incident" v-model="filteredIncidents">
+                <label>incident</label>
+                <br>
+                </span>
             </div>
             <div class="cell auto">
                 <p>Select Neighborhood(s)</p>

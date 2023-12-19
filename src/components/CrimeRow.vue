@@ -48,7 +48,15 @@
         <td>{{ data.case_number }}</td>
         <td>{{ data.date }}</td>
         <td>{{ data.time }}</td>
-        <td>{{ data.incident }}</td>
+        <span v-if="(100<= data.code && data.code<= 453) || (810<=data.code && data.code <= 863)">
+        <td class="violent-crimes">{{ data.incident }}</td>
+        </span>
+        <span v-else-if="(500<= data.code && data.code<= 732) || (900<=data.code && data.code <= 1436)">
+        <td class="property-crimes">{{ data.incident }}</td>
+        </span>
+        <span v-else>
+        <td class="other-crimes">{{ data.incident }}</td>
+        </span>
         <td>{{ data.police_grid }}</td>
         <td>{{ getNeighborhoodName[data.neighborhood_number]}}</td>
         <td>{{ data.block }}</td>
@@ -59,5 +67,17 @@
 <style scoped>
     th, td {
         border: solid 1px #000000;
+    }
+
+    .violent-crimes{
+        background-color:#b84b56;
+    }
+
+    .property-crimes{
+        background-color:orange;
+    }
+
+    .other-crimes{
+        background-color: #edd55a;
     }
 </style>
