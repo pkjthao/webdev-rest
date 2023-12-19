@@ -6,13 +6,12 @@ import Popup from './components/Popup.vue'
 let filteredIncidents = ref([]);
 let filteredNeighborhood = ref([]);
 let checkIncidents = ref([]);
-const filter = ref(true);
+let filter = ref(true);
 let start_date = ref('');
 let end_date = ref('');
 let max_shown = ref('');
 let crime_url = ref('');
 let location = ref('');
-let filtered_crime_data = reactive([]);
 let crime_data = reactive([]);
 let max_bounds = reactive([]);
 let neighborhoods = reactive([]);
@@ -166,6 +165,7 @@ function initializeCrimes() {
     //changed will keep track and see if any filters were selected
     let changed = ref(false);
     // if filter is not true aka filter is on
+    console.log(filter.value)
     if(!filter.value){
         console.log('in')
         let neighborhoodList = "neighborhood=";
@@ -261,7 +261,7 @@ function initializeCrimes() {
         })
         .then((data) => {
             console.log(data);
-            filtered_crime_data = data;
+            crime_data = data;
         })
         .catch((error) => {
             console.log(error);
@@ -427,11 +427,8 @@ const checkNeighborhood = ref([
                     <th>Neighborhood</th>
                     <th>Block</th>
                 </thead>
-                <tbody v-if="filter">
-                    <CrimeRow v-for="crime in crime_data" :data="crime"></CrimeRow>
-                </tbody>
-                 <tbody v-else>
-                    <CrimeRow v-for="crime in filtered_crime_data" :data="crime"></CrimeRow>
+                <tbody>
+                    <CrimeRow v-for="crime in crime_data" :data="crime" :key="crime.data"></CrimeRow>
                 </tbody>
             </table>
         </div>
