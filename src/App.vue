@@ -3,16 +3,15 @@ import { reactive, ref, onMounted } from 'vue';
 import CrimeRow from './components/CrimeRow.vue';
 import Popup from './components/Popup.vue'
 
-const filteredIncidents = ref([]);
-const filteredNeighborhood = ref([]);
-const checkIncidents = ref([]);
+let filteredIncidents = ref([]);
+let filteredNeighborhood = ref([]);
+let checkIncidents = ref([]);
 const filter = ref(true);
 let start_date = reactive('');
 let end_date = reactive('');
 let max_shown = reactive('');
 let crime_url = ref('');
 let location = ref('');
-let new_crime_data = reactive([]);
 let crime_data = reactive([]);
 let max_bounds = reactive([]);
 let neighborhoods = reactive([]);
@@ -151,6 +150,11 @@ onMounted(() => {
 
 
 // FUNCTIONS
+//Funciton is called when user presses button and toggles the data displayed. 
+function toggle(){
+    filter.value = !filter.value;
+    initializeCrimes();
+}
 // Function called once user has entered REST API URL
 function initializeCrimes() {
     // TODO: get code and neighborhood data
@@ -158,20 +162,109 @@ function initializeCrimes() {
     let url = crime_url.value;
     url = url + "/incidents";
     //console.log(neighborhoods);
-
-    //console.log(url);
-    fetch(url)
-    .then((res) => {
-        return res.json();
-    })
-    .then((data) => {
-        console.log(data);
-        crime_data = data;
-    })
-    .catch((error) => {
-        console.log(error);
-    })
-    
+    //changed will keep track and see if any filters were selected
+    let changed = ref(false);
+    // if filter is not true aka filter is on
+    if(filter == true){
+        console.log('in')
+        let neighborhoodList = "neighborhood=";
+        let incidentTypes = "code=";
+        let start = "start_date=";
+        let end = "end_date=";
+        let limit = "limit="
+        // if no boxes were checked for neighborhoods get rid of that part from the url
+        if(filteredNeighborhood.length == 0){
+            neighborhoodList = "";
+        }
+        else{
+            changed=true;
+            neighborhoodList = neighborhoodList + filteredNeighborhood[0];
+            for(let i = 1; i < filteredNeighborhood.length; i++){
+                neighborhoodList = neighborhoodList + "," + filteredNeighborhood[i];        
+            };
+        }
+        //if not boxes were checked for incident types get rid of that part from the url
+        if(filteredIncidents.length == 0){
+            incidentTypes = "";
+        }
+        else{
+            incidentTypes = incidentTypes + filteredIncidents[0];
+            for(let i = 1; i < filteredIncidents.length; i++){
+                incidentTypes = incidentTypes + "," + filteredIncidents[i];
+            }
+            if(changed){
+                incidentTypes = "&" + incidentTypes;
+            }
+            changed = true;
+        }
+        // if start date is before end date good to go otherwise wipe from url
+        if(start_date < end_date){
+            if(changed){
+                start = "&" + start + start_date;
+            }
+            else{
+                start = start + start_date;
+            }
+            end = "&" + end + end_date;
+            changed = true;
+        }
+        else if(start_date < 0 && end_date == ""){
+            if(changed){
+                start = "&" + start + start_date;
+            }
+            else{
+                start = start + start_date;
+            }
+            changed = true;
+        }
+        else{
+            start = "";
+            end = "";
+        }
+        // if limit is less than 1 wipe from url
+        if(limit < 1){
+            limit = "";
+        }
+        else{
+            if(changed){
+                limit = "&" + limit + max_shown;
+            }
+            else{
+                limit = limit + max_shown;
+            }
+            changed = true;
+        }
+        // string concatinates the filtered parameters together to make the url.
+        if(changed){
+            url = url + "?" + neighborhoodList + incidentTypes + start_date + end_date + limit;
+        }
+        console.log(url);
+        fetch(url)
+        .then((res) => {
+            return res.json();
+         })
+        .then((data) => {
+            console.log(data);
+            crime_data = data;
+        })
+        .catch((error) => {
+           console.log(error);
+        })
+    }
+    else{
+        //console.log(url);
+        fetch(url)
+        .then((res) => {
+            return res.json();
+        })
+        .then((data) => {
+            console.log(data);
+            crime_data = data;
+        })
+        .catch((error) => {
+            console.log(error);
+        })
+    }
 }
 
 // Function called when user presses 'OK' on dialog box
@@ -210,85 +303,18 @@ function getLocation() {
 
 }
 
-//Funciton is called when user presses button and toggles the data displayed. 
-function toggle(){
-    filter.value = !filter.value;
-}
-
 // funcition groups crime data into a array to use for filter options
 function filterSetup(){
     let url = crime_url.value;
     url = url + "/incidents";
     for(let i = 0; i < crime_data.length; i++){
-        if(crime_data.InstanceType in checkIncidents){
+        if(crime_data.incident in checkIncidents){
             
         }
         else{
-            checkIncidents = crime_data.InstanceType
+            checkIncidents = crime_data.incident
         }
     }
-}
-
-/*
-Function is called when user has entered fitering values
-Param0 is a array that will have the incident type/types that are to be displayed
-Param1 is a array with selected neighborhood names
-Param2 and 3 is a selected start and end date
-Param4 is a int with the amount of incidents that it will show
-*/
-function filteredCrimes(param0, param1, param2, param3, param4) {
-    var neighborhoodList ="/neighborhoods?id=" + param1[0];
-    var incidentTypes = "/incidents?code=" + param0[0];
-    var start = "/incidents?start_date=";
-    var end = "/incidents?end_date=";
-    var limit = "/incidents?limit=";
-    let url = crime_url.value;
-    // sets up the string for the neighbohood url input
-    for(let i = 1; i < param1.length; i++){
-        neighborhoodList = neighborhoodList + "," + param1[i];        
-    };
-    // sets up the string for the incident type url input
-    for(let i = 1; i < param0.length; i++){
-        incidentTypes = incidentTypes + "," + param0[i];
-    }
-
-    // if no boxes were checked for neighborhoods get rid of that part from the url
-    if(param1.length == 0){
-        neighborhoodList = "";
-    }
-    //if not boxes were checked for incident types get rid of that part from the url
-    if(param0.length == 0){
-        incidentTypes = "";
-    }
-    // if start date is before end date good to go otherwise wipe from url
-    if(param2 < param3){
-        start = start + param2;
-        end = end + param3;
-    }
-    else{
-        start = "";
-        end = "";
-    }
-    // if limit is less than 1 wipe from url
-    if(limit < 1){
-        limit = "";
-    }
-    else{
-        limit = limit + param4.value;
-    }
-    // string concatinates the filtered parameters together to make the url.
-    url = url + incidentTypes + neighborhoodList + start + end + limit;
-    fetch(url)
-    .then((res) => {
-        return res.json();
-    })
-    .then((data) => {
-       console.log(data);
-        new_crime_data = data;
-    })
-    .catch((error) => {
-        console.log(error);
-    })
 }
 
 //data for the neighborhood checkboxes
@@ -342,7 +368,7 @@ const checkNeighborhood = ref([
                 <h1> Filters </h1>
             </div>
             <div class="cell auto">
-            <button v-if="filter" class="button" type="button" @click="toggle(); filteredCrimes(filteredIncidents, filteredNeighborhood, start_date, end_date, max_shown)">Apply</button>
+            <button v-if="filter" class="button" type="button" @click="toggle">Apply</button>
             <button v-else class="button" type="button" @click="toggle">Reset</button>
             </div>
             <div class="cell auto">
@@ -378,6 +404,15 @@ const checkNeighborhood = ref([
         <br>
         <div class="grid-x grid-padding-x">
             <Popup :url="crime_url"/>
+            <div class="cell auto">
+                <label class="violent-crimes">Violent Crimes</label>
+            </div>
+            <div class="cell auto">
+                <label class="property-crimes">Property Crimes</label>
+            </div>
+            <div class="cell auto">
+                <label class="other-crimes">Other Crimes</label>
+            </div>
         </div>
         <div class="grid-x grid-padding-x">
             <table>
@@ -394,7 +429,7 @@ const checkNeighborhood = ref([
                     <CrimeRow v-for="crime in crime_data" :data="crime"></CrimeRow>
                 </tbody>
                  <tbody v-else>
-                    <CrimeRow v-for="crime in new_crime_data" :data="crime"></CrimeRow>
+                    <CrimeRow v-for="crime in crime_data" :data="crime"></CrimeRow>
                 </tbody>
             </table>
         </div>
@@ -429,5 +464,17 @@ const checkNeighborhood = ref([
 .dialog-error {
     font-size: 1rem;
     color: #D32323;
+}
+
+.violent-crimes{
+        background-color:#b84b56;
+    }
+
+.property-crimes{
+        background-color:orange;
+}
+
+.other-crimes{
+    background-color: #edd55a;
 }
 </style>
