@@ -77,54 +77,6 @@
         })
     }
 
-    /*
-    // Define a custom icon
-    const customIcon = L.icon({
-    iconUrl: 'path/to/your/icon.png',
-    iconSize: [38, 38], 
-    iconAnchor: [19, 38], 
-    popupAnchor: [0, -38]})
-
-    async function getAddressCoordinates(address) {
-    try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`);
-        const data = await response.json();
-
-        if (data && data.length > 0) {
-        return {
-            lat: parseFloat(data[0].lat),
-            lng: parseFloat(data[0].lon)
-        };
-        } else {
-        console.error('No coordinates found for the address');
-        return null;
-        }
-    } catch (error) {
-        console.error('Error fetching coordinates:', error);
-        return null;
-    }
-    }
-    function showCrimeLocation() {
-        const { block } = props.data;
-        const modifiedBlock = block.replace(/(\d+)X/g, '$10'); // Replace 'X' with '0'
-
-        // Assuming you have a function to get coordinates from an address
-        const crimeLocation = getAddressCoordinates(modifiedBlock); // Implement this function
-
-        if (crimeLocation) {
-            // Here, you can add a marker to the map at crimeLocation coordinates
-            // Use a different color/icon than other markers, and create a popup with date, time, incident, and delete button
-            // Example code to add a marker (Leaflet.js)
-            const crimeMarker = L.marker([crimeLocation.lat, crimeLocation.lng], { icon: customIcon }).addTo(map);
-            crimeMarker.bindPopup(
-            `<strong>Date:</strong> ${props.data.date}<br>
-            <strong>Time:</strong> ${props.data.time}<br>
-            <strong>Incident:</strong> ${props.data.incident}<br>
-            <button class="button" @click.stop="deleteCrime(data.case_number)">Delete</button>`
-            );
-        }
-    }*/
-
 </script>
 
 <template>
@@ -132,7 +84,9 @@
         <td>{{ data.case_number }}</td>
         <td>{{ data.date }}</td>
         <td>{{ data.time }}</td>
-        <td>{{ data.incident }}</td>
+        <td class="violent-crimes" v-if="(100<= data.code && data.code<= 453) || (810<=data.code && data.code <= 863)">{{ data.incident }}</td>
+        <td class="property-crimes" v-else-if="(500<= data.code && data.code<= 732) || (900<=data.code && data.code <= 1436)">{{ data.incident }}</td>
+        <td class="other-crimes" v-else>{{ data.incident }}</td>
         <td>{{ data.police_grid }}</td>
         <td>{{ getNeighborhoodName[data.neighborhood_number]}}</td>
         <td>{{ data.block }}</td>
@@ -147,5 +101,17 @@
 <style scoped>
     th, td {
         border: solid 1px #000000;
+    }
+
+    .violent-crimes{
+        background-color:#b84b56;
+    }
+
+    .property-crimes{
+        background-color:orange;
+    }
+
+    .other-crimes{
+        background-color: #edd55a;
     }
 </style>

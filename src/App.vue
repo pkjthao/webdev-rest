@@ -191,11 +191,18 @@ function initializeCrimes() {
         console.log(error);
     })
 
+    let y = 1;
+    for(y; y < 18; y++) {
+        getNeighborhoodName[y][1] = 0;
+    }
+        
     crime_data.forEach((crime) => {
         let x = crime.neighborhood_number;
         getNeighborhoodName[x][1] += 1;
     });
-    console.log(getNeighborhoodName[1][1]);
+    for(y = 0; y < 17; y++) {
+        map.neighborhood_markers[y].marker.setPopupContent(getNeighborhoodName[y + 1][0] + ': ' + getNeighborhoodName[y + 1][1] + ' crimes');
+    }
     
 }
 let marker = null;
