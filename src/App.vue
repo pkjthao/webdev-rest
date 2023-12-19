@@ -279,14 +279,48 @@ function initializeCrimes() {
             return res.json();
         })
         .then((data) => {
-            console.log(data);
+            //console.log(data);
             crime_data = data;
         })
         .catch((error) => {
             console.log(error);
         })
     }
+
+    let y = 1;
+    for(y; y < 18; y++) {
+        getNeighborhoodName[y][1] = 0;
+    }
+
+    crime_data.forEach((crime) => {
+        let x = crime.neighborhood_number;
+        getNeighborhoodName[x][1] += 1;
+    });
+    for(y = 0; y < 17; y++) {
+        map.neighborhood_markers[y].marker.setPopupContent(getNeighborhoodName[y + 1][0] + ': ' + getNeighborhoodName[y + 1][1] + ' crimes');
+    }
 }
+
+let marker = null;
+function addressMarker(data) {
+    if(data.delete) {
+    var greenIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+    //console.log(data);
+    let info = "Date: " + data.crimeData.date + ', Time: ' + data.crimeData.time + ', Incident: ' + data.crimeData.incident;
+    marker = L.marker([data.data.lat, data.data.lon], {icon: greenIcon}).addTo(map.leaflet).bindPopup(info);
+    }
+    else {
+        map.leaflet.removeLayer(marker);
+    }
+}
+
 
 // Function called when user presses 'OK' on dialog box
 function closeDialog() {
@@ -450,7 +484,7 @@ const checkNeighborhood = ref([
                     <th></th>
                 </thead>
                 <tbody>
-                    <CrimeRow v-for="crime in crime_data" :data="crime" :key="crime.data"></CrimeRow>
+                    <CrimeRow v-for="crime in crime_data" @addressMarker="addressMarker" :data="crime" :url="crime_url"></CrimeRow>
                 </tbody>
             </table>
         </div>
