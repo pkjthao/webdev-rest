@@ -7,11 +7,12 @@ let filteredIncidents = ref([]);
 let filteredNeighborhood = ref([]);
 let checkIncidents = ref([]);
 const filter = ref(true);
-let start_date = reactive('');
-let end_date = reactive('');
-let max_shown = reactive('');
+let start_date = ref('');
+let end_date = ref('');
+let max_shown = ref('');
 let crime_url = ref('');
 let location = ref('');
+let filtered_crime_data = reactive([]);
 let crime_data = reactive([]);
 let max_bounds = reactive([]);
 let neighborhoods = reactive([]);
@@ -165,7 +166,7 @@ function initializeCrimes() {
     //changed will keep track and see if any filters were selected
     let changed = ref(false);
     // if filter is not true aka filter is on
-    if(filter == true){
+    if(!filter.value){
         console.log('in')
         let neighborhoodList = "neighborhood=";
         let incidentTypes = "code=";
@@ -173,18 +174,18 @@ function initializeCrimes() {
         let end = "end_date=";
         let limit = "limit="
         // if no boxes were checked for neighborhoods get rid of that part from the url
-        if(filteredNeighborhood.length == 0){
+        if(filteredNeighborhood[0] == undefined || filteredNeighborhood.length == 0){
             neighborhoodList = "";
         }
         else{
-            changed=true;
+            changed.value = true;
             neighborhoodList = neighborhoodList + filteredNeighborhood[0];
             for(let i = 1; i < filteredNeighborhood.length; i++){
                 neighborhoodList = neighborhoodList + "," + filteredNeighborhood[i];        
             };
         }
         //if not boxes were checked for incident types get rid of that part from the url
-        if(filteredIncidents.length == 0){
+        if(filteredIncidents[0] == undefined || filteredIncidents.length == 0){
             incidentTypes = "";
         }
         else{
@@ -192,51 +193,52 @@ function initializeCrimes() {
             for(let i = 1; i < filteredIncidents.length; i++){
                 incidentTypes = incidentTypes + "," + filteredIncidents[i];
             }
-            if(changed){
+            if(changed.value){
                 incidentTypes = "&" + incidentTypes;
             }
-            changed = true;
+            changed.value = true;
         }
         // if start date is before end date good to go otherwise wipe from url
         if(start_date < end_date){
-            if(changed){
+            if(changed.value){
                 start = "&" + start + start_date;
             }
             else{
                 start = start + start_date;
             }
             end = "&" + end + end_date;
-            changed = true;
+            changed.value = true;
         }
         else if(start_date < 0 && end_date == ""){
-            if(changed){
+            if(changed.value){
                 start = "&" + start + start_date;
             }
             else{
                 start = start + start_date;
             }
-            changed = true;
+            changed.value = true;
         }
         else{
             start = "";
             end = "";
         }
+        console.log(max_shown);
         // if limit is less than 1 wipe from url
-        if(limit < 1){
-            limit = "";
-        }
-        else{
-            if(changed){
-                limit = "&" + limit + max_shown;
+        if(max_shown.value > 0){
+            if(changed.value){
+                limit = "&" + limit + max_shown.value;
             }
             else{
-                limit = limit + max_shown;
+                limit = limit + max_shown.value;
             }
-            changed = true;
+            changed.value = true;
+        }
+        else{
+            limit = "";
         }
         // string concatinates the filtered parameters together to make the url.
-        if(changed){
-            url = url + "?" + neighborhoodList + incidentTypes + start_date + end_date + limit;
+        if(changed.value){
+            url = url + "?" + neighborhoodList + incidentTypes + start + end + limit;
         }
         console.log(url);
         fetch(url)
@@ -259,7 +261,7 @@ function initializeCrimes() {
         })
         .then((data) => {
             console.log(data);
-            crime_data = data;
+            filtered_crime_data = data;
         })
         .catch((error) => {
             console.log(error);
@@ -429,7 +431,7 @@ const checkNeighborhood = ref([
                     <CrimeRow v-for="crime in crime_data" :data="crime"></CrimeRow>
                 </tbody>
                  <tbody v-else>
-                    <CrimeRow v-for="crime in crime_data" :data="crime"></CrimeRow>
+                    <CrimeRow v-for="crime in filtered_crime_data" :data="crime"></CrimeRow>
                 </tbody>
             </table>
         </div>
