@@ -11,7 +11,7 @@ let end_date = ref('');
 let max_shown = ref('');
 let crime_url = ref('');
 let location = ref('');
-let crime_data = reactive([]);
+let crime_data = ref([]);
 let max_bounds = reactive([]);
 let neighborhoods = reactive([]);
 let dialog_err = ref(false); 
@@ -212,7 +212,6 @@ function initializeCrimes() {
             let notfirst = false;
             for(let i = 0; i < incidentsArray.length; i++){
                 if(incidentsArray[i] == "Homicide"){
-                    console.log("omicide");
                     incidentTypes = incidentTypes + "100,110,120";
                     notfirst = true;
                 }
@@ -347,7 +346,6 @@ function initializeCrimes() {
             changed.value = true;
         }
         // if start date is before end date good to go otherwise wipe from url
-        console.log(incidentTypes);
         if(start_date.value < end_date.value){
             if(changed.value){
                 start = "&" + start + start_date.value;
@@ -371,7 +369,6 @@ function initializeCrimes() {
             start = "";
             end = "";
         }
-        console.log(neighborhoodList);
         // if limit is less than 1 wipe from url
         if(max_shown.value > 0){
             if(changed.value){
@@ -396,7 +393,7 @@ function initializeCrimes() {
          })
         .then((data) => {
             console.log(data);
-            crime_data = data;
+            crime_data.value = data;
         })
         .catch((error) => {
            console.log(error);
@@ -410,7 +407,7 @@ function initializeCrimes() {
         })
         .then((data) => {
             //console.log(data);
-            crime_data = data;
+            crime_data.value = data;
         })
         .catch((error) => {
             console.log(error);
@@ -422,7 +419,7 @@ function initializeCrimes() {
         getNeighborhoodName[y][1] = 0;
     }
 
-    crime_data.forEach((crime) => {
+    crime_data.value.forEach((crime) => {
         let x = crime.neighborhood_number;
         getNeighborhoodName[x][1] += 1;
     });
