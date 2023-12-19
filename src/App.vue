@@ -5,7 +5,6 @@ import Popup from './components/Popup.vue'
 
 let filteredIncidents = ref([]);
 const filteredNeighborhood = ref([]);
-let checkIncidents = ref([]);
 let filter = ref(true);
 let start_date = ref('');
 let end_date = ref('');
@@ -186,7 +185,6 @@ function initializeCrimes() {
     // if filter is not true aka filter is on
    
     if(!filter.value){
-        console.log('in')
         let neighborhoodList = "neighborhood=";
         let incidentTypes = "code=";
         let start = "start_date=";
@@ -206,14 +204,142 @@ function initializeCrimes() {
             };
         }
         let incidentsArray = toRaw(filteredIncidents.value);
-        //if not boxes were checked for incident types get rid of that part from the url
+        //if not boxes were checked for incident types get rid of that part from the url;
         if(incidentsArray.length == 0){
             incidentTypes = "";
         }
         else{
-            incidentTypes = incidentTypes + incidentsArray[0];
-            for(let i = 1; i < filteredIncidents.length; i++){
-                incidentTypes = incidentTypes + "," + incidentsArray[i];
+            let notfirst = false;
+            for(let i = 0; i < incidentsArray.length; i++){
+                if(incidentsArray[i] == "Homicide"){
+                    console.log("omicide");
+                    incidentTypes = incidentTypes + "100,110,120";
+                    notfirst = true;
+                }
+                else if(incidentsArray[i] == "Rape"){
+                    if(notfirst){
+                        incidentTypes = incidentTypes + ",";
+                    }
+                    notfirst = true;
+                    incidentTypes = incidentTypes + "210,220"
+                }
+                else if(incidentsArray[i] == "Robbery"){
+                    if(notfirst){
+                        incidentTypes = incidentTypes + ",";
+                    }
+                    notfirst = true;
+                    incidentTypes = incidentTypes + "300";
+                    for(let i = 300; i >= 300 && i <=374; i++){
+                        incidentTypes = incidentTypes + "," + i;
+                    }
+                }
+                else if(incidentsArray[i] == "Aggravated Assault"){
+                    if(notfirst){
+                        incidentTypes = incidentTypes + ",";
+                    }
+                    notfirst = true;
+                    incidentTypes = incidentTypes + "400";
+                    for(let i = 400; i >= 400 && i <=453; i++){
+                        incidentTypes = incidentTypes + "," + i;
+                    }
+                }
+                else if(incidentsArray[i] == "Burglary"){
+                    if(notfirst){
+                        incidentTypes = incidentTypes + ",";
+                    }
+                    notfirst = true;
+                    incidentTypes = incidentTypes + "500";
+                    for(let i = 500; i >= 500 && i <=566; i++){
+                        incidentTypes = incidentTypes + "," + i;
+                    }
+                }
+                else if(incidentsArray[i] == "Theft"){
+                    if(notfirst){
+                        incidentTypes = incidentTypes + ",";
+                    }
+                    notfirst = true;
+                    incidentTypes = incidentTypes + "600";
+                    for(let i = 600; i >= 600 && i <=693; i++){
+                        incidentTypes = incidentTypes + "," + i;
+                    }
+                }
+                else if(incidentsArray[i] == "Auto Theft"){
+                    if(notfirst){
+                        incidentTypes = incidentTypes + ",";
+                    }
+                    notfirst = true;
+                    incidentTypes = incidentTypes + "700";
+                    for(let i = 700; i >= 700 && i <=732; i++){
+                        incidentTypes = incidentTypes + "," + i;
+                    }
+                }
+                else if(incidentsArray[i] == "Domestic Assault"){
+                    if(notfirst){
+                        incidentTypes = incidentTypes + ",";
+                    }
+                    notfirst = true;
+                    incidentTypes = incidentTypes + "810";
+                    for(let i = 810; i >= 810 && i <=863; i++){
+                        incidentTypes = incidentTypes + "," + i;
+                    }
+                }
+                else if(incidentsArray[i] == "Arson"){
+                    if(notfirst){
+                        incidentTypes = incidentTypes + ",";
+                    }
+                    notfirst = true;
+                    incidentTypes = incidentTypes + "900";
+                    for(let i = 900; i >= 900 && i <=982; i++){
+                        incidentTypes = incidentTypes + "," + i;
+                    }
+                }
+                else if(incidentsArray[i] == "Criminal Damage"){
+                    if(notfirst){
+                        incidentTypes = incidentTypes + ",";
+                    }
+                    notfirst = true;
+                    incidentTypes = incidentTypes + "1400";
+                    for(let i = 1400; i >= 1400 && i <=1436; i++){
+                        incidentTypes = incidentTypes + "," + i;
+                    }
+                }
+                else if(incidentsArray[i] == "Narcotics"){
+                    if(notfirst){
+                        incidentTypes = incidentTypes + ",";
+                    }
+                    notfirst = true;
+                    incidentTypes = incidentTypes + "1800";
+                    for(let i = 1800; i >= 1800 && i <=1885; i++){
+                        incidentTypes = incidentTypes + "," + i;
+                    }
+                }
+                else if(incidentsArray[i] == "Discharging a Firearm"){
+                    if(notfirst){
+                        incidentTypes = incidentTypes + ",";
+                    }
+                    notfirst = true;
+                    incidentTypes = incidentTypes + "2619";
+                }
+                else if(incidentsArray[i] == "Proactive Police Vist"){
+                    if(notfirst){
+                        incidentTypes = incidentTypes + ",";
+                    }
+                    notfirst = true;
+                    incidentTypes = incidentTypes + "9954";
+                }
+                else if(incidentsArray[i] == "Community Engagement Event"){
+                    if(notfirst){
+                        incidentTypes = incidentTypes + ",";
+                    }
+                    notfirst = true;
+                    incidentTypes = incidentTypes + "9959";
+                }
+                else{
+                    if(notfirst){
+                        incidentTypes = incidentTypes + ",";
+                    }
+                    incidentTypes = incidentTypes + "9986";
+                }
             }
             if(changed.value){
                 incidentTypes = "&" + incidentTypes;
@@ -221,7 +347,7 @@ function initializeCrimes() {
             changed.value = true;
         }
         // if start date is before end date good to go otherwise wipe from url
-        console.log(start_date.value);
+        console.log(incidentTypes);
         if(start_date.value < end_date.value){
             if(changed.value){
                 start = "&" + start + start_date.value;
@@ -363,20 +489,6 @@ function getLocation() {
 
 }
 
-// funcition groups crime data into a array to use for filter options
-function filterSetup(){
-    let url = crime_url.value;
-    url = url + "/incidents";
-    for(let i = 0; i < crime_data.length; i++){
-        if(crime_data.incident in checkIncidents){
-            
-        }
-        else{
-            checkIncidents = crime_data.incident
-        }
-    }
-}
-
 //data for the neighborhood checkboxes
 const checkNeighborhood = ref([
         {message: 'Conway/Battlecreek/Highwood',},
@@ -396,6 +508,23 @@ const checkNeighborhood = ref([
         {message: 'Highland'},
         {message: 'Summit Hill'},
         {message: 'Capitol River'}
+])
+const checkIncidents = ref([
+    {message: "Homicide", id:"100,110,120"},
+    {message: "Rape"},
+    {message: "Robbery"},
+    {message: "Aggravated Assault"},
+    {message: "Burglary"},
+    {message: "Theft"},
+    {message: "Auto Theft"},
+    {message: "Domestic Assault"},
+    {message: "Arson"},
+    {message: "Criminal Damage"},
+    {message: "Narcotics"},
+    {message: "Discharging a Firearm"},
+    {message: "Proactive Police Visit"},
+    {message: "Community Engagement Event"},
+    {message: "proactive Foot Patrol"}
 ])
 
 </script>
@@ -434,8 +563,8 @@ const checkNeighborhood = ref([
             <div class="cell auto">
                 <p>Select Incident Type(s)</p>
                 <span v-for="incident in checkIncidents">
-                <input type="checkbox" id="incidenttypes" value="incident" v-model="filteredIncidents">
-                <label>incident</label>
+                <input type="checkbox" :value="incident.message" v-model="filteredIncidents">
+                <label>{{ incident.message }}</label>
                 <br>
                 </span>
             </div>
