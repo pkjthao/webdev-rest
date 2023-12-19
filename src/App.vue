@@ -1,10 +1,10 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, onMounted, toRaw} from 'vue';
 import CrimeRow from './components/CrimeRow.vue';
 import Popup from './components/Popup.vue'
 
 let filteredIncidents = ref([]);
-let filteredNeighborhood = ref([]);
+const filteredNeighborhood = ref([]);
 let checkIncidents = ref([]);
 let filter = ref(true);
 let start_date = ref('');
@@ -165,7 +165,7 @@ function initializeCrimes() {
     //changed will keep track and see if any filters were selected
     let changed = ref(false);
     // if filter is not true aka filter is on
-    console.log(filter.value)
+   
     if(!filter.value){
         console.log('in')
         let neighborhoodList = "neighborhood=";
@@ -173,25 +173,28 @@ function initializeCrimes() {
         let start = "start_date=";
         let end = "end_date=";
         let limit = "limit="
+        let neighborhoodArray = toRaw(filteredNeighborhood.value)
+        
         // if no boxes were checked for neighborhoods get rid of that part from the url
-        if(filteredNeighborhood[0] == undefined || filteredNeighborhood.length == 0){
+        if(neighborhoodArray.length == 0){
             neighborhoodList = "";
         }
         else{
             changed.value = true;
-            neighborhoodList = neighborhoodList + filteredNeighborhood[0];
-            for(let i = 1; i < filteredNeighborhood.length; i++){
-                neighborhoodList = neighborhoodList + "," + filteredNeighborhood[i];        
+            neighborhoodList = neighborhoodList + neighborhoodArray[0];
+            for(let i = 1; i < neighborhoodArray.length; i++){
+                neighborhoodList = neighborhoodList + "," + neighborhoodArray[i];        
             };
         }
+        let incidentsArray = toRaw(filteredIncidents.value);
         //if not boxes were checked for incident types get rid of that part from the url
-        if(filteredIncidents[0] == undefined || filteredIncidents.length == 0){
+        if(incidentsArray.length == 0){
             incidentTypes = "";
         }
         else{
-            incidentTypes = incidentTypes + filteredIncidents[0];
+            incidentTypes = incidentTypes + incidentsArray[0];
             for(let i = 1; i < filteredIncidents.length; i++){
-                incidentTypes = incidentTypes + "," + filteredIncidents[i];
+                incidentTypes = incidentTypes + "," + incidentsArray[i];
             }
             if(changed.value){
                 incidentTypes = "&" + incidentTypes;
@@ -199,22 +202,23 @@ function initializeCrimes() {
             changed.value = true;
         }
         // if start date is before end date good to go otherwise wipe from url
-        if(start_date < end_date){
+        console.log(start_date.value);
+        if(start_date.value < end_date.value){
             if(changed.value){
-                start = "&" + start + start_date;
+                start = "&" + start + start_date.value;
             }
             else{
-                start = start + start_date;
+                start = start + start_date.value;
             }
-            end = "&" + end + end_date;
+            end = "&" + end + end_date.value;
             changed.value = true;
         }
-        else if(start_date < 0 && end_date == ""){
+        else if(start_date.value > 0 && end_date.value == ""){
             if(changed.value){
-                start = "&" + start + start_date;
+                start = "&" + start + start_date.value;
             }
             else{
-                start = start + start_date;
+                start = start + start_date.value;
             }
             changed.value = true;
         }
@@ -222,7 +226,7 @@ function initializeCrimes() {
             start = "";
             end = "";
         }
-        console.log(max_shown);
+        console.log(neighborhoodList);
         // if limit is less than 1 wipe from url
         if(max_shown.value > 0){
             if(changed.value){
@@ -321,7 +325,7 @@ function filterSetup(){
 
 //data for the neighborhood checkboxes
 const checkNeighborhood = ref([
-        {message: 'Conway/Battlecreek/Highwood'},
+        {message: 'Conway/Battlecreek/Highwood',},
         {message: 'Greater East Side'},
         {message: 'West Side'},
         {message: 'Dayton\'s Bluff'},
@@ -334,7 +338,7 @@ const checkNeighborhood = ref([
         {message: 'Hamline/Midway'},
         {message: 'St. Anthony'},
         {message: 'Union Park'},
-        {message: 'Macalester-Groveland'},
+        {message: 'Macalester-Groveland',},
         {message: 'Highland'},
         {message: 'Summit Hill'},
         {message: 'Capitol River'}
@@ -384,7 +388,7 @@ const checkNeighborhood = ref([
             <div class="cell auto">
                 <p>Select Neighborhood(s)</p>
                 <span v-for="(item, index) in checkNeighborhood">
-                <input type="checkbox" :value="index" v-model="filteredNeighborhood">
+                <input type="checkbox" :value="index + 1" v-model="filteredNeighborhood">
                 <label>{{item.message}}</label>
                 <br>
                 </span>
