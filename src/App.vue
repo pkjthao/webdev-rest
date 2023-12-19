@@ -9,7 +9,7 @@ let location = ref('');
 let crime_data = reactive([]);
 let max_bounds = reactive([]);
 let neighborhoods = reactive([]);
-let dialog_err = ref(false);
+let dialog_err = ref(false); 
 let loc_err = ref(false);
 let map = reactive(
     {
