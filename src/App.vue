@@ -165,7 +165,7 @@ onMounted(() => {
 
     console.log(district_boundary._layers);
 });
-
+ 
 
 // FUNCTIONS
 //Funciton is called when user presses button and toggles the data displayed. 
