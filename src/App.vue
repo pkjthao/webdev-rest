@@ -400,6 +400,13 @@ function initializeCrimes() {
         })
     }
     else{
+        if(neighborhoods.length > 0) {
+            url = url + '?neighborhood=';
+            neighborhoods.forEach((num) => {
+                url += num + ',';
+            })
+            url = url.slice(0, -1);
+        }
         //console.log(url);
         fetch(url)
         .then((res) => {
