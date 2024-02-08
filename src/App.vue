@@ -6,6 +6,7 @@ import Popup from './components/Popup.vue'
 let filteredIncidents = ref([]);
 const filteredNeighborhood = ref([]);
 let filter = ref(true);
+let about = ref(true);
 let start_date = ref('');
 let end_date = ref('');
 let max_shown = ref('');
@@ -172,6 +173,9 @@ onMounted(() => {
 function toggle(){
     filter.value = !filter.value;
     initializeCrimes();
+}
+function change(){
+    about.value = !about.value;
 }
 // Function called once user has entered REST API URL
 function initializeCrimes() {
@@ -400,13 +404,6 @@ function initializeCrimes() {
         })
     }
     else{
-        if(neighborhoods.length > 0) {
-            url = url + '?neighborhood=';
-            neighborhoods.forEach((num) => {
-                url += num + ',';
-            })
-            url = url.slice(0, -1);
-        }   
         //console.log(url);
         fetch(url)
         .then((res) => {
@@ -532,8 +529,16 @@ const checkIncidents = ref([
 ])
 
 </script>
-
 <template>
+    <div class="grid-x grid-padding-x">
+        <span v-if="about">
+            <button class="button large" type="button" @click="change">About</button>
+        </span>
+        <span v-else>
+            <a href="/"><button class="button large" type="button" @click="change">Home</button></a>
+        </span>
+    </div>
+    <div v-if="about">
     <dialog id="rest-dialog" open>
         <h1 class="dialog-header">St. Paul Crime REST API</h1>
         <label class="dialog-label">URL: </label>
@@ -626,6 +631,61 @@ const checkIncidents = ref([
             </table>
         </div>
     </div>
+    </div>
+    <div v-else>
+        <div class="grid-x grid-padding-x">
+            <div class="cell small-12">
+                <h1>About our St. Paul Crime Map</h1>
+                <video width="1000" height="500" controls><source src="\src\video4751396828.mp4" type="video/mp4"></video>
+            </div>
+            <div class="cell small-12"><h1>Our Team</h1></div>
+            <div class="cell small-2"><img src="\src\photo.JPG" alt="Picture of Paku"></div>
+            <div class="cell small-10"><p class="bio">My name is Paku Thao and I am a junior at the University of St. Thomas.</p></div>
+            <div class="cell small-10"><p class="bio">Rafay Malik, a junior Computer Science major, excels in coding, hackathons, and collaborative problem-solving. My passion for tech innovation drives a quest for impactful contributions in the field.</p></div>
+            <div class="cell small-2"><img src="\src\ProjectPicture.jpeg" alt="Picture of Rafay"></div>
+            <div class="cell small-2"><img src="\src\headshot.png" alt="Picture of Russell"></div>
+            <div class="cell small-10"><p class="bio">My name is Russell Ostergaard and I am a senior at the University of St. Thomas.</p></div>
+            
+        </div>
+        <div class="grid-x grid-padding-x spacing">
+            <div class="cell small-12"><h1>Tools Used</h1></div>
+            <div class="cell small-2"><img src="\src\vue.png" alt="Picture of vue logo"></div>
+            <div class="cell small-10">
+                <h2>Vue</h2>
+                <p class="bio">We used vue to create our single page application and tie all the other tools that we used together.</p>
+            </div>
+            <div class="cell small-2"><img src="\src\customAPI.png" alt="Picture of Custom API"></div>
+            <div class="cell small-10">
+                <h2>Custom Rest Api</h2>
+                <p class="bio">We used our custom API to get data in and out of are database by using rest commands.</p>
+            </div>
+            <div class="cell small-12"><h1>Interesting Findings</h1></div>
+            <div class="cell small-12">
+                <p class="bio">How you are able to make checklists in vue, if you store the value in a ref array then it will be a proxy array which you will
+                    have use methods on it to get the values.
+                </p>
+            </div>
+            <div class="cell small-12">
+                <p class="bio">When making a table that updates as the data is updated if you have the data stored in a reactive array it will not update properly but if
+                    you use a ref array and do .value on it then it will actually update properly.
+                </p>
+            </div>
+            <div class="cell small-12">
+                <p class="bio">While looking at the crime stats there was less violent crimes than we thought there would be</p>
+            </div>
+            <div class="cell small-12">
+                <p class="bio">It was interesting looking at the different crimes in all the different neighborhoods especially when you filtered it down to look at specific
+                    crimes in spicific neighborhoods.
+                </p>
+            </div>
+            <div class="cell small-12">
+                <p class="bio">How well the API communicated with the vue and how the amount of work it took to set up was not a lot.</p>
+            </div>
+            <div class="cell small-12">
+                <p class="bio">The amount of built rendering help that vue has like v-if's and v-for which are little things that save so much time when it comes to coding.</p>
+            </div>
+        </div>
+    </div>
 </template>
 
 <style>
@@ -668,5 +728,12 @@ const checkIncidents = ref([
 
 .other-crimes{
     background-color: #edd55a;
+}
+
+.bio{
+    font-size: 2rem;
+}
+.spacing{
+    grid-gap: 0.5rem;
 }
 </style>
