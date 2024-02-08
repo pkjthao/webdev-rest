@@ -639,7 +639,7 @@ const checkIncidents = ref([
                 <video width="1000" height="500" controls><source src="\src\video4751396828.mp4" type="video/mp4"></video>
             </div>
             <div class="cell small-12"><h1>Our Team</h1></div>
-            <div class="cell small-2"><img src="\src\photo.JPG" alt="Picture of Paku"></div>
+            <div class="cell small-2"><img src="\src\headshot.jpg" alt="Picture of Paku"></div>
             <div class="cell small-10"><p class="bio">My name is Paku Thao and I am a junior at the University of St. Thomas.</p></div>
             <div class="cell small-10"><p class="bio">Rafay Malik, a junior Computer Science major, excels in coding, hackathons, and collaborative problem-solving. My passion for tech innovation drives a quest for impactful contributions in the field.</p></div>
             <div class="cell small-2"><img src="\src\ProjectPicture.jpeg" alt="Picture of Rafay"></div>
